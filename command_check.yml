@@ -1,0 +1,31 @@
+---
+- name: Check for availability of a command on Juniper device
+  hosts: junos
+  gather_facts: false
+  connection: local
+# ansible_connection: ansible.netcommon.network_cli
+  collections: junipernetworks.junos
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+#    ansible_user: "{{ lookup('env','ANSIBLE_USER') }}"  #  extract user name from the env variables
+#    ansible_password: "{{ lookup('env','ANSIBLE_PASSWORD') }}" # extract password from the env variables
+  vars_prompt:
+   - name: ansible_user
+     prompt: "enter your ansible user name"
+     private: no
+   - name: ansible_password
+     prompt: "enter your ansible password"
+   - name: command
+     prompt: "enter your command here"
+     private: no
+  tasks:
+    - name: Execute show configuration command
+      junos_command:
+        commands:
+          - show configuration snmp | display set
+      register: show_configuration_output
+    - name: Check for availability of the command
+      debug:
+        msg: "Command is {{ 'available' if command in show_configuration_output.stdout_lines[0] else 'not available' }}"
+
+...
